@@ -11,7 +11,7 @@ const SKILLS = [
   { lab: 'Langages', tag: '// code', items: ['HTML', 'CSS', 'JavaScript', 'PHP'] },
   { lab: 'Frameworks', tag: '// ui', items: ['Bootstrap', 'React'] },
   { lab: 'CMS', tag: '// platforms', items: ['WordPress', 'Shopify', 'PrestaShop'] },
-  { lab: 'Outils IA', tag: '// gen', items: ['Cursor', 'ChatGPT', 'Claude Code', 'Vercel v0'] },
+  { lab: 'Outils IA', tag: '// daily', items: ['Claude Code', 'Cursor', 'ChatGPT', 'Vercel v0'] },
   { lab: 'Design', tag: '// proto', items: ['Figma', 'Canva', 'Photoshop'] },
   { lab: 'Bases de données', tag: '// data', items: ['SQL'] },
 ]
@@ -21,6 +21,20 @@ const PROJECTS = [
   { id: 'P-02', url: 'https://www.carresol-parquet.com', name: 'carresol-parquet.com', type: 'Boutique · refonte complète', badge: 'PrestaShop', cls: 'b-ps' },
   { id: 'P-03', url: 'https://www.welfaire.com', name: 'welfaire.com', type: 'Site vitrine', badge: 'WordPress', cls: 'b-wp' },
   { id: 'P-04', url: 'https://frenchica.com', name: 'frenchica.com', type: 'E-commerce', badge: 'WordPress', cls: 'b-wp' },
+]
+
+// Terminal animé : un objet de config JS (identité dev, pas de roleplay)
+const CONFIG = [
+  { k: 'stack',     v: "['WordPress', 'Shopify', 'PrestaShop']" },
+  { k: 'ia',        v: "['Claude Code', 'Cursor', 'ChatGPT']" },
+  { k: 'je_pilote', v: "['archi', 'logique métier', 'revue']" },
+  { k: 'garantie',  v: "'du code que je comprends à 100%'" },
+]
+
+const AI_POINTS = [
+  { h: 'Je garde le contrôle', d: 'Chaque ligne générée est relue, comprise et refactorée. Je ne livre que du code que je maîtrise.' },
+  { h: 'Plus vite sur le répétitif', d: 'L\'IA absorbe le boilerplate et la doc. J\'investis ce temps dans l\'archi, la perf et l\'intégration.' },
+  { h: 'Debug augmenté', d: 'J\'explore les pistes avec Claude Code et Cursor, mais le diagnostic et la décision restent les miens.' },
 ]
 
 export default function App() {
@@ -121,6 +135,26 @@ export default function App() {
     })
   }, [])
 
+  // Terminal IA : les lignes apparaissent une à une au scroll
+  useEffect(() => {
+    const term = document.querySelector('.terminal')
+    if (!term) return
+    const lines = Array.from(term.querySelectorAll('.term-line'))
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) { lines.forEach((l) => l.classList.add('lit')); return }
+    const timers = []
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) {
+          lines.forEach((l, i) => timers.push(setTimeout(() => l.classList.add('lit'), i * 360)))
+          io.disconnect()
+        }
+      })
+    }, { threshold: 0.4 })
+    io.observe(term)
+    return () => { io.disconnect(); timers.forEach(clearTimeout) }
+  }, [])
+
   // Compteurs animés (réveillés au scroll)
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -155,7 +189,7 @@ export default function App() {
           <i className="dot" style={{ background: '#febc2e' }} />
           <i className="dot" style={{ background: '#28c840' }} />
         </span>
-        <span className="url mono">https://noutcha.dev/cv — front-end-cms</span>
+        <span className="url mono">https://noutcha.dev/cv · front-end-cms</span>
         <span className="stat mono">● online</span>
       </div>
 
@@ -164,14 +198,15 @@ export default function App() {
         <header className="hero">
           <img className="avatar inspect" data-tag="img.avatar" src={photo} alt="Portrait de Noutcha Tchatat" width="150" height="150" fetchPriority="high" decoding="async" />
           <div className="eyebrow">
-            <span className="blink" />&lt;dev role="front-end"&gt; <span className="tag">// CMS specialist · Paris</span>
+            <span className="blink" />&lt;dev role="front-end"&gt; <span className="tag">// CMS · AI-augmented · Paris</span>
           </div>
           <h1 className="inspect" data-tag="h1#name">Noutcha<br /><span className="l2 glitch" data-text="Tchatat.">Tchatat.</span></h1>
           <p className="role">Intégrateur web → <b>Développeur Front-End CMS</b> · <b>6 ans</b> en agence · <b>100+ projets</b></p>
           <p className="intro inspect" data-tag="p.intro">
-            J'intègre et développe des front-ends <strong>pixel-perfect</strong> sur WordPress, Shopify et PrestaShop,
-            en collaboration avec des équipes design, SEO et marketing. Je cherche un poste à <strong>plus de responsabilités</strong>,
-            pour continuer à progresser techniquement sur des projets ambitieux.
+            J'intègre et développe des front-ends <strong>pixel-perfect</strong> sur WordPress, Shopify et PrestaShop.
+            Je code en <strong>binôme avec l'IA</strong> (Claude Code, Cursor) pour livrer <strong>plus vite </strong>
+            sans jamais rogner sur la qualité. En quête d'un poste à <strong>plus de responsabilités</strong>,
+            sur des projets ambitieux.
           </p>
           <div className="stats">
             <div className="stat-box">
@@ -196,7 +231,7 @@ export default function App() {
               <span className="k">tel</span>{TEL_DISPLAY}
             </a>
             <span className="chip mono"><span className="k">geo</span>Paris · Pantin, FR</span>
-            <span className="chip mono"><span className="k">lang</span>Anglais — courant</span>
+            <span className="chip mono"><span className="k">lang</span>Anglais courant</span>
           </div>
         </header>
 
@@ -210,7 +245,7 @@ export default function App() {
           <article className="exp inspect reveal" data-tag="article.experience">
             <div className="exp-top">
               <h3>Intégrateur Web</h3><span className="co">@ Solead Agency</span>
-              <span className="when mono">02/2019 — 09/2025</span>
+              <span className="when mono">02/2019 → 09/2025</span>
             </div>
             <div className="exp-loc mono">Paris, France · agence web</div>
             <div className="cols">
@@ -236,7 +271,7 @@ export default function App() {
                 <h4>Environnement</h4>
                 <ul>
                   <li><b>Git</b> au quotidien</li>
-                  <li><b>Chrome DevTools</b> — tests responsive</li>
+                  <li><b>Chrome DevTools</b> · tests responsive</li>
                   <li>WordPress · Shopify · PrestaShop</li>
                 </ul>
               </div>
@@ -244,10 +279,56 @@ export default function App() {
           </article>
         </section>
 
+        {/* AI WORKFLOW */}
+        <section id="ai">
+          <div className="sec-head reveal">
+            <span className="sec-num mono">02</span>
+            <h2>Dev augmenté par l'IA</h2>
+            <span className="meta mono">human-in-the-loop</span>
+          </div>
+          <p className="ai-lead reveal">
+            Je ne me contente pas de générer du code, je l'<b>orchestre</b>. L'IA absorbe le répétitif ;
+            je garde la main sur l'<b>architecture</b>, la <b>performance</b> et la <b>qualité</b>.
+            Résultat : je livre <b>plus vite</b>, sans jamais sacrifier la maîtrise.
+          </p>
+          <div className="ai-grid">
+            <div className="terminal reveal" data-tag="div.terminal">
+              <div className="term-bar">
+                <span className="dots">
+                  <i className="dot" style={{ background: '#ff5f57' }} />
+                  <i className="dot" style={{ background: '#febc2e' }} />
+                  <i className="dot" style={{ background: '#28c840' }} />
+                </span>
+                <span className="term-title mono">noutcha@agency: ~/profile</span>
+              </div>
+              <div className="term-body mono">
+                <div className="term-line cmd"><span className="prompt">$</span> cat noutcha.config.js</div>
+                <div className="term-line code"><span className="kw">const</span> <span className="fn">noutcha</span> = {'{'}</div>
+                {CONFIG.map((c) => (
+                  <div className="term-line code" key={c.k}>
+                    {'  '}<span className="key">{c.k}</span>: <span className="str">{c.v}</span>,
+                  </div>
+                ))}
+                <div className="term-line code">{'}'}</div>
+                <div className="term-line cmt"># l'IA assiste, je reste l'auteur</div>
+                <div className="term-line cmd"><span className="prompt">$</span> <span className="caret" /></div>
+              </div>
+            </div>
+            <div className="ai-points">
+              {AI_POINTS.map((p) => (
+                <div className="ai-point inspect reveal" data-tag="div.ai-point" key={p.h}>
+                  <h4>{p.h}</h4>
+                  <p>{p.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* SKILLS */}
         <section id="skills">
           <div className="sec-head reveal">
-            <span className="sec-num mono">02</span>
+            <span className="sec-num mono">03</span>
             <h2>Compétences</h2>
             <span className="meta mono">stack.json</span>
           </div>
@@ -266,7 +347,7 @@ export default function App() {
         {/* PROJECTS */}
         <section id="projects">
           <div className="sec-head reveal">
-            <span className="sec-num mono">03</span>
+            <span className="sec-num mono">04</span>
             <h2>Projets</h2>
             <span className="meta mono">4 sélectionnés</span>
           </div>
@@ -287,15 +368,15 @@ export default function App() {
         {/* EDU / LANG */}
         <section id="more">
           <div className="sec-head reveal">
-            <span className="sec-num mono">04</span>
+            <span className="sec-num mono">05</span>
             <h2>Formation &amp; profil</h2>
           </div>
           <div className="two">
             <div className="minicard inspect reveal" data-tag="div.education">
               <div className="lab">Formation</div>
-              <h3>Master — Manager de la communication numérique</h3>
-              <p>Pôle Universitaire Léonard de Vinci · Institut de l'Internet et du Multimédia — La Défense, France</p>
-              <div className="yr mono">2017 — 2021</div>
+              <h3>Master · Manager de la communication numérique</h3>
+              <p>Pôle Universitaire Léonard de Vinci · Institut de l'Internet et du Multimédia · La Défense, France</p>
+              <div className="yr mono">2017 → 2021</div>
             </div>
             <div className="minicard reveal">
               <div className="lab">Langues &amp; intérêts</div>
@@ -312,7 +393,7 @@ export default function App() {
             <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
             <a href={`tel:${TEL_HREF}`}>{TEL_DISPLAY}</a>
           </div>
-          <div className="small">Noutcha Tchatat — Développeur Front-End CMS · Paris, FR</div>
+          <div className="small">Noutcha Tchatat · Développeur Front-End CMS · Paris, FR</div>
         </footer>
       </div>
     </>

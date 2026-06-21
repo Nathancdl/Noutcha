@@ -65,11 +65,11 @@ body::after{
   opacity:0;transition:opacity .12s ease;
   box-shadow:0 4px 18px rgba(62,240,255,.35);
 }
-.inspect{position:relative;transition:box-shadow .15s ease,background .15s ease}
+.inspect{position:relative;transition:box-shadow .3s cubic-bezier(.22,.61,.36,1),background .3s ease}
 .inspect:hover{
-  background:var(--select);
-  box-shadow:inset 0 0 0 1px var(--cyan), 0 0 24px -6px rgba(62,240,255,.4);
-  border-radius:6px;
+  background:rgba(62,240,255,.05);
+  box-shadow:inset 0 0 0 1px rgba(62,240,255,.4);
+  border-radius:8px;
 }
 
 .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 28px}
@@ -173,6 +173,13 @@ a.chip:hover .k{color:var(--cyan)}
   position:absolute;top:64px;right:0;width:150px;height:150px;border-radius:50%;
   border:2px solid var(--cyan);object-fit:cover;
   box-shadow:0 0 40px -8px rgba(62,240,255,.5);
+  transition:transform .45s cubic-bezier(.22,.61,.36,1),box-shadow .45s ease;
+}
+/* Hover doux, dédié à la photo : on garde le cercle, pas de contour carré */
+.avatar.inspect:hover{
+  background:none;border-radius:50%;
+  transform:scale(1.05);
+  box-shadow:0 0 56px -4px rgba(62,240,255,.65);
 }
 @media(max-width:780px){.avatar{position:static;margin-bottom:24px;width:104px;height:104px}}
 
@@ -209,6 +216,41 @@ section{padding:54px 0;position:relative;z-index:1}
 .cols li{font-size:14.5px;color:var(--muted);padding:5px 0 5px 16px;position:relative;line-height:1.45}
 .cols li::before{content:"";position:absolute;left:0;top:11px;width:5px;height:5px;border-radius:50%;background:var(--cyan-deep)}
 .cols li b{color:var(--ink);font-weight:500}
+
+/* ===== Section IA ===== */
+.ai-lead{max-width:680px;color:var(--muted);font-size:16px;line-height:1.65;margin:-12px 0 28px}
+.ai-lead b{color:var(--ink);font-weight:500}
+.ai-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:start}
+@media(max-width:860px){.ai-grid{grid-template-columns:1fr}}
+
+.terminal{
+  background:#070b18;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  box-shadow:0 30px 70px -38px rgba(0,0,0,.85),inset 0 0 0 1px rgba(62,240,255,.04);
+}
+.term-bar{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--bg-2);border-bottom:1px solid var(--line)}
+.term-title{font-size:12px;color:var(--muted)}
+.term-body{padding:18px;font-size:13.5px;line-height:1.45}
+.term-line{margin:7px 0;opacity:0;transform:translateX(-8px);transition:opacity .3s ease,transform .3s ease;white-space:pre-wrap;word-break:break-word}
+.term-line.lit{opacity:1;transform:none}
+.term-line.cmd{color:var(--ink)}
+.term-line.cmd .prompt,.term-line.cmd::first-letter{color:var(--cyan)}
+.term-line.code{color:var(--muted)}
+.term-line .kw{color:var(--amber)}
+.term-line .fn{color:var(--cyan)}
+.term-line .key{color:var(--cyan-deep)}
+.term-line .str{color:var(--term)}
+.term-line.ok{color:var(--term)}
+.term-line.cmt{color:var(--muted);font-style:italic}
+.prompt{color:var(--cyan)}
+.caret{display:inline-block;width:8px;height:15px;background:var(--cyan);vertical-align:text-bottom;
+  animation:blink 1.1s step-end infinite;box-shadow:0 0 10px rgba(62,240,255,.7)}
+
+.ai-points{display:flex;flex-direction:column;gap:12px}
+.ai-point{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;transition:border-color .2s ease,transform .2s ease}
+.ai-point:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.ai-point h4{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cyan);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.ai-point h4::before{content:"▸";color:var(--term)}
+.ai-point p{color:var(--muted);font-size:13.5px;line-height:1.55}
 
 .skills-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
 .skcard{
@@ -291,6 +333,6 @@ footer .links a:hover{color:var(--cyan)}
 
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
-  .reveal{opacity:1;transform:none}
+  .reveal,.term-line{opacity:1;transform:none}
 }
 :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
