@@ -1,6 +1,12 @@
 import { useEffect, useRef } from 'react'
 import photo from './photo.jpg'
 
+// Contact — source unique de vérité (tel au format international pour que la
+// numérotation fonctionne depuis un mobile ou l'étranger).
+const EMAIL = 'noutcha.tchatat@gmail.com'
+const TEL_DISPLAY = '07 86 10 91 27'
+const TEL_HREF = '+33786109127'
+
 const SKILLS = [
   { lab: 'Langages', tag: '// code', items: ['HTML', 'CSS', 'JavaScript', 'PHP'] },
   { lab: 'Frameworks', tag: '// ui', items: ['Bootstrap', 'React'] },
@@ -20,15 +26,23 @@ const PROJECTS = [
 export default function App() {
   const hudRef = useRef(null)
 
-  // Inspector HUD : suit le curseur sur les éléments .inspect
+  // Inspector HUD : suit le curseur sur les éléments .inspect.
+  // Désactivé sur appareils tactiles (pas de curseur) et limité à 1 maj/frame.
   useEffect(() => {
+    const fine = window.matchMedia('(pointer: fine)').matches
+    if (!fine) return
     const hud = hudRef.current
     const els = Array.from(document.querySelectorAll('.inspect'))
+    let frame = 0
     const onMove = (el) => (e) => {
-      hud.textContent = el.dataset.tag || el.tagName.toLowerCase()
-      hud.style.left = e.clientX + 'px'
-      hud.style.top = e.clientY + 'px'
-      hud.style.opacity = '1'
+      const { clientX, clientY } = e
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        hud.textContent = el.dataset.tag || el.tagName.toLowerCase()
+        hud.style.left = clientX + 'px'
+        hud.style.top = clientY + 'px'
+        hud.style.opacity = '1'
+      })
     }
     const onLeave = () => { hud.style.opacity = '0' }
     const handlers = els.map((el) => {
@@ -37,10 +51,13 @@ export default function App() {
       el.addEventListener('mouseleave', onLeave)
       return { el, move }
     })
-    return () => handlers.forEach(({ el, move }) => {
-      el.removeEventListener('mousemove', move)
-      el.removeEventListener('mouseleave', onLeave)
-    })
+    return () => {
+      cancelAnimationFrame(frame)
+      handlers.forEach(({ el, move }) => {
+        el.removeEventListener('mousemove', move)
+        el.removeEventListener('mouseleave', onLeave)
+      })
+    }
   }, [])
 
   // Scroll reveal
@@ -74,7 +91,7 @@ export default function App() {
       <div className="wrap">
         {/* HERO */}
         <header className="hero">
-          <img className="avatar inspect" data-tag="img.avatar" src={photo} alt="Noutcha Tchatat" />
+          <img className="avatar inspect" data-tag="img.avatar" src={photo} alt="Portrait de Noutcha Tchatat" width="150" height="150" fetchPriority="high" decoding="async" />
           <div className="eyebrow">
             <span className="blink" />&lt;dev role="front-end"&gt; <span className="tag">// CMS specialist · Paris</span>
           </div>
@@ -86,8 +103,12 @@ export default function App() {
             pour continuer à progresser techniquement sur des projets ambitieux.
           </p>
           <div className="hero-meta">
-            <span className="chip mono"><span className="k">@</span><a href="mailto:noutcha.tchatat@gmail.com">noutcha.tchatat@gmail.com</a></span>
-            <span className="chip mono"><span className="k">tel</span><a href="tel:0786109127">07 86 10 91 27</a></span>
+            <a className="chip mono" href={`mailto:${EMAIL}`} aria-label={`Envoyer un email à ${EMAIL}`}>
+              <span className="k">@</span>{EMAIL}
+            </a>
+            <a className="chip mono" href={`tel:${TEL_HREF}`} aria-label={`Appeler le ${TEL_DISPLAY}`}>
+              <span className="k">tel</span>{TEL_DISPLAY}
+            </a>
             <span className="chip mono"><span className="k">geo</span>Paris · Pantin, FR</span>
             <span className="chip mono"><span className="k">lang</span>Anglais — courant</span>
           </div>
@@ -165,8 +186,8 @@ export default function App() {
           </div>
           <div className="proj">
             {PROJECTS.map((p) => (
-              <a className="pcard reveal" href={p.url} target="_blank" rel="noopener" key={p.id}>
-                <span className="go">↗</span>
+              <a className="pcard reveal" href={p.url} target="_blank" rel="noopener noreferrer" key={p.id} aria-label={`Voir le projet ${p.name} (nouvel onglet)`}>
+                <span className="go" aria-hidden="true">↗</span>
                 <span className="num mono">{p.id}</span>
                 <h3>{p.name}</h3>
                 <span className="type mono">{p.type}</span>
@@ -200,10 +221,10 @@ export default function App() {
         </section>
 
         <footer>
-          <a className="cta" href="mailto:noutcha.tchatat@gmail.com">$ contact --now <span>→</span></a>
+          <a className="cta" href={`mailto:${EMAIL}`}>$ contact --now <span>→</span></a>
           <div className="links">
-            <a href="mailto:noutcha.tchatat@gmail.com">noutcha.tchatat@gmail.com</a>
-            <a href="tel:0786109127">07 86 10 91 27</a>
+            <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
+            <a href={`tel:${TEL_HREF}`}>{TEL_DISPLAY}</a>
           </div>
           <div className="small">Noutcha Tchatat — Développeur Front-End CMS · Paris, FR</div>
         </footer>
