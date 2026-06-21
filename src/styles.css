@@ -32,6 +32,30 @@ body::before{
   mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 80%);
 }
 
+/* Aurores animées en fond */
+body::after{
+  content:"";position:fixed;inset:-20%;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(38% 38% at 18% 22%,rgba(62,240,255,.16),transparent 60%),
+    radial-gradient(34% 34% at 82% 18%,rgba(82,227,164,.13),transparent 60%),
+    radial-gradient(40% 40% at 70% 85%,rgba(124,108,255,.14),transparent 62%);
+  filter:blur(28px);
+  animation:aurora 22s ease-in-out infinite alternate;
+}
+@keyframes aurora{
+  0%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(2%,-2%,0) scale(1.08)}
+  100%{transform:translate3d(-2%,2%,0) scale(1.04)}
+}
+
+/* Spotlight qui suit la souris */
+#spotlight{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(220px circle at var(--mx,-100px) var(--my,-100px),
+    rgba(62,240,255,.10),transparent 70%);
+  mix-blend-mode:screen;transition:background .05s linear;
+}
+
 #hud{
   position:fixed;z-index:60;pointer-events:none;
   font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:500;
@@ -79,7 +103,38 @@ h1{
   font-size:clamp(48px,9vw,108px);font-weight:700;line-height:.92;
   letter-spacing:-.03em;margin-bottom:8px;
 }
-h1 .l2{color:var(--cyan);position:relative;display:inline-block}
+h1 .l2{
+  position:relative;display:inline-block;
+  background:linear-gradient(100deg,var(--cyan) 20%,#fff 38%,var(--cyan) 56%,var(--cyan-deep) 80%);
+  background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:shimmer 5.5s linear infinite;
+}
+@keyframes shimmer{0%{background-position:160% 0}100%{background-position:-60% 0}}
+
+/* Glitch RGB au survol du titre */
+.glitch::before,.glitch::after{
+  content:attr(data-text);position:absolute;left:0;top:0;
+  -webkit-background-clip:initial;background-clip:initial;
+  opacity:0;pointer-events:none;
+}
+h1:hover .glitch::before{
+  color:#ff2e63;opacity:.85;animation:glitch-a .42s steps(2) 1;
+}
+h1:hover .glitch::after{
+  color:var(--cyan);opacity:.85;animation:glitch-b .42s steps(2) 1;
+}
+@keyframes glitch-a{
+  0%,100%{transform:translate(0,0);clip-path:inset(0 0 0 0)}
+  20%{transform:translate(-3px,-2px);clip-path:inset(0 0 62% 0)}
+  40%{transform:translate(3px,2px);clip-path:inset(58% 0 0 0)}
+  60%{transform:translate(-2px,1px);clip-path:inset(20% 0 40% 0)}
+}
+@keyframes glitch-b{
+  0%,100%{transform:translate(0,0);clip-path:inset(0 0 0 0)}
+  25%{transform:translate(3px,1px);clip-path:inset(0 0 70% 0)}
+  50%{transform:translate(-3px,-1px);clip-path:inset(48% 0 14% 0)}
+  75%{transform:translate(2px,-2px);clip-path:inset(72% 0 0 0)}
+}
 .role{
   font-family:"JetBrains Mono",monospace;font-size:clamp(14px,2.4vw,19px);
   color:var(--muted);margin:26px 0 30px;
@@ -89,7 +144,19 @@ h1 .l2{color:var(--cyan);position:relative;display:inline-block}
 .intro{max-width:600px;color:var(--muted);font-size:17px;line-height:1.65}
 .intro strong{color:var(--ink);font-weight:500}
 
-.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
+.stats{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
+.stat-box{
+  flex:1;min-width:128px;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;
+  transition:border-color .2s ease,transform .2s ease;
+}
+.stat-box:hover{border-color:var(--cyan);transform:translateY(-3px)}
+.stat-box::before{content:"";position:absolute;left:0;top:0;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.6}
+.stat-box .num{display:block;font-size:34px;font-weight:700;color:var(--ink);line-height:1;letter-spacing:-.02em}
+.stat-box .lab{display:block;font-size:11.5px;color:var(--muted);margin-top:7px;letter-spacing:.03em}
+
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
 .chip{
   font-family:"JetBrains Mono",monospace;font-size:12.5px;
   border:1px solid var(--line);border-radius:30px;padding:7px 15px;color:var(--ink);
@@ -200,6 +267,24 @@ footer .small{color:var(--muted);font-family:"JetBrains Mono",monospace;font-siz
 footer .links{display:flex;gap:18px;justify-content:center;margin-top:18px;flex-wrap:wrap}
 footer .links a{color:var(--muted);text-decoration:none;font-family:"JetBrains Mono",monospace;font-size:13px}
 footer .links a:hover{color:var(--cyan)}
+
+/* Tilt 3D + reflet sur les cartes */
+.proj,.skills-grid{perspective:1100px}
+.tilt{
+  transform:perspective(1100px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+  transition:transform .12s ease,border-color .2s ease,box-shadow .2s ease;
+  transform-style:preserve-3d;
+}
+.pcard.tilt:hover,.skcard.tilt:hover{
+  transform:perspective(1100px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+  box-shadow:0 26px 60px -30px rgba(62,240,255,.55);
+}
+.tilt::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:2;
+  background:radial-gradient(200px circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.12),transparent 60%);
+  opacity:0;transition:opacity .25s ease;
+}
+.tilt:hover::after{opacity:1}
 
 .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
 .reveal.in{opacity:1;transform:none}

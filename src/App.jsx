@@ -74,8 +74,79 @@ export default function App() {
     return () => io.disconnect()
   }, [])
 
+  // Spotlight + aurores : la position de la souris pilote des variables CSS
+  useEffect(() => {
+    const fine = window.matchMedia('(pointer: fine)').matches
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (!fine || reduce) return
+    const root = document.documentElement
+    let frame = 0
+    const onMove = (e) => {
+      const { clientX, clientY } = e
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        root.style.setProperty('--mx', clientX + 'px')
+        root.style.setProperty('--my', clientY + 'px')
+      })
+    }
+    window.addEventListener('mousemove', onMove)
+    return () => { cancelAnimationFrame(frame); window.removeEventListener('mousemove', onMove) }
+  }, [])
+
+  // Tilt 3D sur les cartes
+  useEffect(() => {
+    const fine = window.matchMedia('(pointer: fine)').matches
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (!fine || reduce) return
+    const cards = Array.from(document.querySelectorAll('.tilt'))
+    const onMove = (el) => (e) => {
+      const r = el.getBoundingClientRect()
+      const px = (e.clientX - r.left) / r.width - 0.5
+      const py = (e.clientY - r.top) / r.height - 0.5
+      el.style.setProperty('--rx', (py * -7).toFixed(2) + 'deg')
+      el.style.setProperty('--ry', (px * 9).toFixed(2) + 'deg')
+      el.style.setProperty('--gx', (px * 100 + 50).toFixed(1) + '%')
+      el.style.setProperty('--gy', (py * 100 + 50).toFixed(1) + '%')
+    }
+    const onLeave = (el) => () => { el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg') }
+    const handlers = cards.map((el) => {
+      const move = onMove(el), leave = onLeave(el)
+      el.addEventListener('mousemove', move)
+      el.addEventListener('mouseleave', leave)
+      return { el, move, leave }
+    })
+    return () => handlers.forEach(({ el, move, leave }) => {
+      el.removeEventListener('mousemove', move)
+      el.removeEventListener('mouseleave', leave)
+    })
+  }, [])
+
+  // Compteurs animés (réveillés au scroll)
+  useEffect(() => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const els = Array.from(document.querySelectorAll('[data-count]'))
+    if (reduce) { els.forEach((el) => { el.textContent = el.dataset.count + (el.dataset.suffix || '') }); return }
+    const run = (el) => {
+      const end = Number(el.dataset.count), suffix = el.dataset.suffix || ''
+      const dur = 1100, t0 = performance.now()
+      const tick = (t) => {
+        const p = Math.min((t - t0) / dur, 1)
+        const eased = 1 - Math.pow(1 - p, 3)
+        el.textContent = Math.round(end * eased) + suffix
+        if (p < 1) requestAnimationFrame(tick)
+      }
+      requestAnimationFrame(tick)
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => { if (en.isIntersecting) { run(en.target); io.unobserve(en.target) } })
+    }, { threshold: 0.6 })
+    els.forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [])
+
   return (
     <>
+      <div id="spotlight" aria-hidden="true" />
       <div id="hud" ref={hudRef} />
 
       <div className="topbar">
@@ -95,13 +166,28 @@ export default function App() {
           <div className="eyebrow">
             <span className="blink" />&lt;dev role="front-end"&gt; <span className="tag">// CMS specialist · Paris</span>
           </div>
-          <h1 className="inspect" data-tag="h1#name">Noutcha<br /><span className="l2">Tchatat.</span></h1>
+          <h1 className="inspect" data-tag="h1#name">Noutcha<br /><span className="l2 glitch" data-text="Tchatat.">Tchatat.</span></h1>
           <p className="role">Intégrateur web → <b>Développeur Front-End CMS</b> · <b>6 ans</b> en agence · <b>100+ projets</b></p>
           <p className="intro inspect" data-tag="p.intro">
             J'intègre et développe des front-ends <strong>pixel-perfect</strong> sur WordPress, Shopify et PrestaShop,
             en collaboration avec des équipes design, SEO et marketing. Je cherche un poste à <strong>plus de responsabilités</strong>,
             pour continuer à progresser techniquement sur des projets ambitieux.
           </p>
+          <div className="stats">
+            <div className="stat-box">
+              <span className="num mono"><span data-count="6" data-suffix="">0</span></span>
+              <span className="lab mono">ans d'expérience</span>
+            </div>
+            <div className="stat-box">
+              <span className="num mono"><span data-count="100" data-suffix="+">0</span></span>
+              <span className="lab mono">projets livrés</span>
+            </div>
+            <div className="stat-box">
+              <span className="num mono"><span data-count="3" data-suffix="">0</span></span>
+              <span className="lab mono">CMS maîtrisés</span>
+            </div>
+          </div>
+
           <div className="hero-meta">
             <a className="chip mono" href={`mailto:${EMAIL}`} aria-label={`Envoyer un email à ${EMAIL}`}>
               <span className="k">@</span>{EMAIL}
@@ -167,7 +253,7 @@ export default function App() {
           </div>
           <div className="skills-grid">
             {SKILLS.map((s) => (
-              <div className="skcard inspect reveal" data-tag="div.skill" key={s.lab}>
+              <div className="skcard tilt inspect reveal" data-tag="div.skill" key={s.lab}>
                 <div className="lab">{s.lab} <span>{s.tag}</span></div>
                 <div className="tagrow">
                   {s.items.map((it) => <span className="t" key={it}>{it}</span>)}
@@ -186,7 +272,7 @@ export default function App() {
           </div>
           <div className="proj">
             {PROJECTS.map((p) => (
-              <a className="pcard reveal" href={p.url} target="_blank" rel="noopener noreferrer" key={p.id} aria-label={`Voir le projet ${p.name} (nouvel onglet)`}>
+              <a className="pcard tilt reveal" href={p.url} target="_blank" rel="noopener noreferrer" key={p.id} aria-label={`Voir le projet ${p.name} (nouvel onglet)`}>
                 <span className="go" aria-hidden="true">↗</span>
                 <span className="num mono">{p.id}</span>
                 <h3>{p.name}</h3>
